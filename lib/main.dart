@@ -97,7 +97,7 @@ class _BlankPageState extends State<BlankPage> {
   List<dynamic> mangas = [];
   List<dynamic> savedMangas = [];
   int offset = 0;
-  final int limit = 12;
+  final int limit = 15; // Altere para 15
   String searchQuery = '';
 
   @override
@@ -106,23 +106,29 @@ class _BlankPageState extends State<BlankPage> {
     fetchMangas();
   }
 
-  // Requisição inicial para buscar mangas sem filtro
-  Future<void> fetchMangas() async {
-    final response = await http.get(Uri.parse('https://api.jikan.moe/v4/top/anime?type=ona'));
+  Future<void> fetchMangas({int offset = 0}) async {
+    final response = await http.get(Uri.parse('https://api.jikan.moe/v4/top/anime?type=ona&offset=$offset&limit=$limit'));
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       setState(() {
-        mangas = data['data'];
+        mangas.addAll(data['data']); // Adiciona novos mangas à lista
       });
     } else {
       print('Failed to load mangas: ${response.statusCode}');
     }
   }
 
-  // Requisição à API da Jikan para buscar mangás baseados no termo de pesquisa
+  Future<void> loadMore() async {
+    // Incrementa o offset
+    offset += limit;
+    await fetchMangas(offset: offset);
+  }
+
   Future<void> searchMangas(String query) async {
     if (query.isEmpty) {
+      mangas.clear(); // Limpa a lista antes de recarregar
+      offset = 0; // Reinicia o offset
       fetchMangas();
       return;
     }
@@ -133,6 +139,7 @@ class _BlankPageState extends State<BlankPage> {
       final data = jsonDecode(response.body);
       setState(() {
         mangas = data['data']; // Atualiza a lista com base na pesquisa
+        offset = 0; // Reinicia o offset para a nova pesquisa
       });
     } else {
       print('Failed to search mangas: ${response.statusCode}');
@@ -154,7 +161,7 @@ class _BlankPageState extends State<BlankPage> {
     return Scaffold(
       appBar: AppBar(
         title: TextField(
-          onChanged: searchMangas, // Chama a função de busca sempre que o texto mudar
+          onChanged: searchMangas,
           style: GoogleFonts.montserrat(color: Colors.white),
           decoration: InputDecoration(
             hintText: 'Pesquisar Mangás',
@@ -210,7 +217,7 @@ class _BlankPageState extends State<BlankPage> {
         ),
       ),
       body: ListView.builder(
-        itemCount: mangas.length + 1,
+        itemCount: mangas.length + (offset < mangas.length ? 1 : 0), // Exibe o botão 'Carregar mais' se houver mais mangas
         itemBuilder: (context, index) {
           if (index < mangas.length) {
             final manga = mangas[index];
@@ -247,7 +254,7 @@ class _BlankPageState extends State<BlankPage> {
             );
           } else if (index == mangas.length) {
             return TextButton(
-              onPressed: fetchMangas,
+              onPressed: loadMore,
               child: Text('Carregar mais'),
             );
           }
@@ -346,18 +353,46 @@ class AboutPage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
+            Text('Desenvolvido por', style: TextStyle(fontSize: 24)),
+            SizedBox(height: 16),
+
+            // Matheus
             Row(
               children: [
                 CircleAvatar(
-                  radius: 40,
-                  backgroundImage: NetworkImage('URL_DA_SUA_IMAGEM'),
+                  radius: 50,
+                  backgroundImage: NetworkImage('URL_DA_SUA_FOTO'), // Adicione sua URL
                 ),
-                SizedBox(width: 20),
-                Text(
-                  'Seu Nome',
-                  style: GoogleFonts.montserrat(fontSize: 18),
+                SizedBox(width: 10),
+                Text('Matheus Stolf', style: TextStyle(fontSize: 20)),
+              ],
+            ),
+            SizedBox(height: 16),
+
+            // Membro 1
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 50,
+                  backgroundImage: NetworkImage('URL_DO_MEMBRO_1'), // Adicione a URL do membro 1
                 ),
+                SizedBox(width: 10),
+                Text('Mateus Barros', style: TextStyle(fontSize: 20)),
+              ],
+            ),
+            SizedBox(height: 16),
+
+            // Membro 2
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 50,
+                  backgroundImage: NetworkImage('URL_DO_MEMBRO_2'), // Adicione a URL do membro 2
+                ),
+                SizedBox(width: 10),
+                Text('Juliano Alessandro', style: TextStyle(fontSize: 20)),
               ],
             ),
           ],
@@ -366,3 +401,4 @@ class AboutPage extends StatelessWidget {
     );
   }
 }
+
