@@ -27,10 +27,14 @@ class MyApp extends StatelessWidget {
           bodyMedium: GoogleFonts.montserrat(color: Colors.black),
         ),
       ),
-      home: HomePage(),
+      home: Transform.scale(
+        scale: 0.9, // Reduzindo a escala para 90%
+        child: HomePage(),
+      ),
     );
   }
 }
+
 
 class HomePage extends StatefulWidget {
   @override
