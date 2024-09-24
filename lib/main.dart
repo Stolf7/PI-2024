@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -12,81 +13,160 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'My Deep Manga',
+      theme: ThemeData(
+        brightness: Brightness.light,
+        primaryColor: Colors.black,
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.black,
+          titleTextStyle: GoogleFonts.montserrat(color: Colors.white, fontSize: 20),
+          iconTheme: IconThemeData(color: Colors.white), // Ícones do AppBar em branco
+        ),
+        textTheme: TextTheme(
+          bodyLarge: GoogleFonts.montserrat(color: Colors.black),
+          bodyMedium: GoogleFonts.montserrat(color: Colors.black),
+        ),
+      ),
       home: HomePage(),
     );
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _opacityAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        color: Colors.blue,
-        child: Stack(
-          children: <Widget>[
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    'MDM',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    'Todos os seus mangas aqui',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 24,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 10.0,
-                          color: Colors.black,
-                          offset: Offset(2.0, 2.0),
+      body: Stack(
+        children: [
+          // Fundo foto moe
+          FadeTransition(
+            opacity: _opacityAnimation,
+            child: Container(
+              color: Colors.transparent, // Mantém a cor de fundo transparente
+            ),
+          ),
+          // Conteúdo principal da tela
+          Container(
+            width: double.infinity,
+            color: Colors.black, // Definindo o fundo como preto
+            child: Stack(
+              children: [
+                Center(
+                  child: FadeTransition(
+                    opacity: _opacityAnimation,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'MDM',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 52,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 4.0,
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          'Crie e organize sua lista de animes e mangas preferidos com o MyDeepManga',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 22,
+                            color: Colors.white.withOpacity(0.9),
+                            fontWeight: FontWeight.w500,
+                            height: 1.4,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 8.0,
+                                color: Colors.black26,
+                                offset: Offset(2.0, 2.0),
+                              ),
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
-            Positioned(
-              bottom: 40,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => BlankPage()),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
+                ),
+                Positioned(
+                  bottom: 100, // Altura Matheus
+                  left: 20,
+                  right: 20,
+                  child: FadeTransition(
+                    opacity: _opacityAnimation,
+                    child: Image.asset(
+                      "assets/images/cat-cat.png", // Caminho da sua imagem
+                      fit: BoxFit.contain, // Mantenha a proporção da imagem
+                      width: 250, // Defina uma largura específica
+                      height: 250, // Defina uma altura específica
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                  ),
-                  child: Text(
-                    'Vamos começar',
-                    style: GoogleFonts.montserrat(),
                   ),
                 ),
-              ),
+                Positioned(
+                  bottom: 50, // Deixe esse valor para o botão
+                  left: 20,
+                  right: 20,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => BlankPage()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white, // Fundo do botão
+                      foregroundColor: Colors.black, // Cor do texto do botão
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 18),
+                      elevation: 6.0,
+                    ),
+                    child: Text(
+                      'My Deep',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
+
+
 
 class BlankPage extends StatefulWidget {
   @override
@@ -162,14 +242,13 @@ class _BlankPageState extends State<BlankPage> {
       appBar: AppBar(
         title: TextField(
           onChanged: searchMangas,
-          style: GoogleFonts.montserrat(color: Colors.white),
+          style: GoogleFonts.montserrat(color: Colors.white), // Texto da pesquisa em branco
           decoration: InputDecoration(
             hintText: 'Pesquisar Mangás',
-            hintStyle: GoogleFonts.montserrat(color: Colors.white54),
+            hintStyle: GoogleFonts.montserrat(color: Colors.white54), // Dica em branco
             border: InputBorder.none,
           ),
         ),
-        backgroundColor: Colors.blue,
       ),
       drawer: Drawer(
         child: ListView(
@@ -184,17 +263,17 @@ class _BlankPageState extends State<BlankPage> {
                 ),
               ),
               decoration: BoxDecoration(
-                color: Colors.blue,
+                color: Colors.black,
               ),
             ),
             ListTile(
-              title: Text('Mangas', style: GoogleFonts.montserrat()),
+              title: Text('Mangas', style: GoogleFonts.montserrat(color: Colors.black)),
               onTap: () {
                 Navigator.pop(context);
               },
             ),
             ListTile(
-              title: Text('Minha lista', style: GoogleFonts.montserrat()),
+              title: Text('Minha lista', style: GoogleFonts.montserrat(color: Colors.black)),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -204,7 +283,7 @@ class _BlankPageState extends State<BlankPage> {
               },
             ),
             ListTile(
-              title: Text('Sobre', style: GoogleFonts.montserrat()),
+              title: Text('Sobre', style: GoogleFonts.montserrat(color: Colors.black)),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -246,58 +325,18 @@ class _BlankPageState extends State<BlankPage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => MangaDetailPage(manga: manga),
-                  ),
+                  MaterialPageRoute(builder: (context) => MangaDetailPage(manga: manga)),
                 );
               },
             );
-          } else if (index == mangas.length) {
-            return TextButton(
-              onPressed: loadMore,
-              child: Text('Carregar mais'),
-            );
           }
-          return SizedBox.shrink();
+
+          // Botão "Carregar mais" se houver mais mangas
+          return ElevatedButton(
+            onPressed: loadMore,
+            child: Text('Carregar mais'),
+          );
         },
-      ),
-    );
-  }
-}
-
-class MangaDetailPage extends StatelessWidget {
-  final dynamic manga;
-
-  MangaDetailPage({required this.manga});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(manga['title']),
-        backgroundColor: Colors.blue,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Image.network(
-              manga['images']['jpg']['image_url'],
-              height: 200,
-            ),
-            SizedBox(height: 16),
-            Text(
-              manga['title'],
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              manga['synopsis'] ?? 'Sinopse não disponível',
-              style: TextStyle(fontSize: 16),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -311,15 +350,11 @@ class MyListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Minha Lista'),
-        backgroundColor: Colors.blue,
-      ),
+      appBar: AppBar(title: Text('Minha Lista', style: GoogleFonts.montserrat())),
       body: ListView.builder(
         itemCount: savedMangas.length,
         itemBuilder: (context, index) {
           final manga = savedMangas[index];
-
           return ListTile(
             title: Text(manga['title']),
             leading: Image.network(
@@ -330,9 +365,7 @@ class MyListPage extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => MangaDetailPage(manga: manga),
-                ),
+                MaterialPageRoute(builder: (context) => MangaDetailPage(manga: manga)),
               );
             },
           );
@@ -342,13 +375,43 @@ class MyListPage extends StatelessWidget {
   }
 }
 
+
+class MangaDetailPage extends StatelessWidget {
+  final dynamic manga;
+
+  MangaDetailPage({required this.manga});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(manga['title'], style: GoogleFonts.montserrat())),
+      body: ListView( // Use ListView ao invés de Column
+        children: [
+          Image.network(manga['images']['jpg']['image_url']),
+          SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              manga['synopsis'] ?? 'No synopsis available',
+              style: GoogleFonts.montserrat(),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
 class AboutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Sobre'),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.black, // Cor da barra para preto
+        iconTheme: IconThemeData(color: Colors.white), // Cor do ícone do menu hamburguer para branco
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -363,36 +426,23 @@ class AboutPage extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 50,
-                  backgroundImage: NetworkImage('URL_DA_SUA_FOTO'), // Adicione sua URL
+                  backgroundImage: AssetImage('assets/images/matheus-profile.jpg'), // Use AssetImage
                 ),
                 SizedBox(width: 10),
-                Text('Matheus Stolf', style: TextStyle(fontSize: 20)),
+                Text('Matheus Stolf', style: TextStyle(fontSize: 24)),
               ],
             ),
             SizedBox(height: 16),
 
-            // Membro 1
+            // Participante 2
             Row(
               children: [
                 CircleAvatar(
                   radius: 50,
-                  backgroundImage: NetworkImage('URL_DO_MEMBRO_1'), // Adicione a URL do membro 1
+                  backgroundImage: AssetImage('assets/images/juliano-profile.jpg'), // Use AssetImage para o membro 2
                 ),
                 SizedBox(width: 10),
-                Text('Mateus Barros', style: TextStyle(fontSize: 20)),
-              ],
-            ),
-            SizedBox(height: 16),
-
-            // Membro 2
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundImage: NetworkImage('URL_DO_MEMBRO_2'), // Adicione a URL do membro 2
-                ),
-                SizedBox(width: 10),
-                Text('Juliano Alessandro', style: TextStyle(fontSize: 20)),
+                Text('Juliano Alessandro', style: TextStyle(fontSize: 24)),
               ],
             ),
           ],
@@ -401,4 +451,5 @@ class AboutPage extends StatelessWidget {
     );
   }
 }
+
 
